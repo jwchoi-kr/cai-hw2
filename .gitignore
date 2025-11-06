@@ -1,0 +1,43 @@
+# Python Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+wheels/
+*.egg
+
+# Unit test / coverage reports
+.tox/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+
+# IDE / Editor specific
+.idea/
+.vscode/
+.history/
+*.swp
+*~
+.DS_Store
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# dotenv (API Keys)
+.env
+.env.*
+
+# OS specific (Windows)
+Thumbs.db
