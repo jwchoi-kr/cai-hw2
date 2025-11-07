@@ -1,0 +1,301 @@
+[
+  {
+    "id": 1,
+    "user_input": "방배동에서 오늘 오후 3시에 출발해서 3시간 안에 갈 수 있는 조용한 카페 거리 추천해줘. 드라이브하면서 바람 쐬고 싶어.",
+    "weather_info": {
+      "weather_condition": "CLOUDY",
+      "temperature": 10.2,
+      "air_quality": "NORMAL"
+    }
+  },
+
+  {
+    "id": 2,
+    "user_input": "부산 해운대 근처에서 아이랑 반나절 즐길 만한 실내 놀거리 추천해줘. 비 오면 밖에 나가기 싫어. 대중교통으로 이동할 거야.",
+    "weather_info": {
+      "weather_condition": "RAIN",
+      "temperature": 8.1,
+      "air_quality": "GOOD"
+    }
+  },
+
+  {
+    "id": 3,
+    "user_input": "대구 수성구에서 오늘 아침 7시에 출발해서 5시간 안에 분위기 좋은 호수 있는 곳 갈 수 있을까? 너무 사람 많으면 싫어. 차로 갈 거야.",
+    "weather_info": {
+      "weather_condition": "CLEAR",
+      "temperature": 6.4,
+      "air_quality": "GOOD"
+    }
+  },
+
+  {
+    "id": 4,
+    "user_input": "광주 북구에서 친구랑 사진 찍기 좋은 장소 추천해줘. 구름 낀 분위기 좋아하는데 너무 추운 곳은 피하고 싶어. 오후 2시에 출발할 예정이야.",
+    "weather_info": {
+      "weather_condition": "PARTLY_CLOUDY",
+      "temperature": 13.0,
+      "air_quality": "BAD"
+    }
+  },
+
+  {
+    "id": 5,
+    "user_input": "수원 인계동에서 오늘 저녁 7시에 출발해서 3시간 안에 갈 수 있는 분위기 좋은 야경 스팟 추천해줘. 너무 시끄러운 곳은 싫어.",
+    "weather_info": {
+      "weather_condition": "CLEAR",
+      "temperature": 7.5,
+      "air_quality": "NORMAL"
+    }
+  },
+
+  {
+    "id": 6,
+    "user_input": "인천 송도역에서 오전 10시에 반려견이랑 4시간 정도 산책할 만한 자연공원 추천해줘. 흙길보다는 포장이 잘 되어 있으면 좋겠어. 차로 이동해.",
+    "weather_info": {
+      "weather_condition": "OVERCAST",
+      "temperature": 9.1,
+      "air_quality": "GOOD"
+    }
+  },
+
+  {
+    "id": 7,
+    "user_input": "대전 유성구에서 오늘 오후 4시에 출발해서 3시간 안에 갈 수 있는 한적한 자연 전망지 추천해줘. 사람 많은 곳은 피하고 싶어.",
+    "weather_info": {
+      "weather_condition": "FOG",
+      "temperature": 6.8,
+      "air_quality": "BAD"
+    }
+  },
+
+  {
+    "id": 8,
+    "user_input": "합정역 근처에서 오늘 오후 1시에 출발해서 3시간 안에 역사나 문화 체험할 만한 서울 근교 명소 추천해줘. 예산은 2만원 정도야.",
+    "weather_info": {
+      "weather_condition": "CLOUDY",
+      "temperature": 11.0,
+      "air_quality": "GOOD"
+    }
+  },
+
+  {
+    "id": 9,
+    "user_input": "제주 애월 근처에서 조용히 해안 풍경 즐기고 싶은데 사람이 너무 많지 않은 장소 있을까? 3시간 안에 다녀올 곳이면 좋아.",
+    "weather_info": {
+      "weather_condition": "PARTLY_CLOUDY",
+      "temperature": 14.8,
+      "air_quality": "NORMAL"
+    }
+  },
+
+  {
+    "id": 10,
+    "user_input": "춘천역 근처에서 부모님 모시고 오늘 오전 10시에 출발해 단풍 예쁜 곳 가고 싶어. 너무 가파른 등산로는 피하고 싶어.",
+    "weather_info": {
+      "weather_condition": "DRIZZLE",
+      "temperature": 5.5,
+      "air_quality": "VERY_BAD"
+    }
+  },
+
+  {
+    "id": 11,
+    "user_input": "전주 한옥마을 근처에서 오늘 밤에 가볍게 2시간 정도 산책할 조용한 경치 좋은 곳 있어? 향이나 소리 자극 강한 곳은 싫어.",
+    "weather_info": {
+      "weather_condition": "FOG",
+      "temperature": 4.1,
+      "air_quality": "NORMAL"
+    }
+  },
+
+  {
+    "id": 12,
+    "user_input": "강릉역 근처에서 오늘 오후 2시에 출발할 건데 바람 많이 불면 바다 말고 숲길 가고 싶어. 예산은 3만원 정도야.",
+    "weather_info": {
+      "weather_condition": "WINDY",
+      "temperature": 9.3,
+      "air_quality": "GOOD"
+    }
+  },
+
+  {
+    "id": 13,
+    "user_input": "창원 의창구에서 부모님과 오늘 오전 10시에 출발해 6시간 안에 고즈넉한 절이나 정원 갈 수 있을까? 너무 덥거나 추운 곳은 피하고 싶어.",
+    "weather_info": {
+      "weather_condition": "PARTLY_CLOUDY",
+      "temperature": 14.0,
+      "air_quality": "NORMAL"
+    }
+  },
+
+  {
+    "id": 14,
+    "user_input": "울산 태화강 근처에서 오늘 저녁 6시에 출발해서 친구랑 반려동물 동반 가능한 야외 공간 찾고 있어. 너무 어둡거나 위험한 장소는 싫어.",
+    "weather_info": {
+      "weather_condition": "CLEAR",
+      "temperature": 11.2,
+      "air_quality": "GOOD"
+    }
+  },
+
+  {
+    "id": 15,
+    "user_input": "세종 고운동에서 오늘 오후 1시에 출발해서 팀원들이랑 가볍게 드라이브해서 갈 수 있는 경치 좋은 호수나 전망대 추천해줘. 예산은 만 원 이하야.",
+    "weather_info": {
+      "weather_condition": "CLOUDY",
+      "temperature": 8.8,
+      "air_quality": "BAD"
+    }
+  },
+
+  {
+    "id": 16,
+    "user_input": "부천 중동역에서 오늘 점심 12시에 출발해서 2~3시간 정도 가볍게 둘러볼 만한 곳 있어? 너무 붐비지만 않으면 돼.",
+    "weather_info": {
+      "weather_condition": "PARTLY_CLOUDY",
+      "temperature": 9.8,
+      "air_quality": "NORMAL"
+    }
+  },
+
+  {
+    "id": 17,
+    "user_input": "포항 남구에서 오늘 오후 2시에 부모님이랑 산책하거나 조용히 쉬기 좋은 곳 찾고 있어. 너무 비싸거나 걷기 많은 곳은 싫어.",
+    "weather_info": {
+      "weather_condition": "CLEAR",
+      "temperature": 12.4,
+      "air_quality": "GOOD"
+    }
+  },
+
+  {
+    "id": 18,
+    "user_input": "세종 새롬동에서 오늘 오전 11시에 출발해서 4시간 안에 조용히 둘러볼 수 있는 역사 유적지나 고즈넉한 마을 추천해줘. 관광버스 많이 오는 곳은 피하고 싶어.",
+    "weather_info": {
+      "weather_condition": "OVERCAST",
+      "temperature": 8.0,
+      "air_quality": "GOOD"
+    }
+  },
+
+  {
+    "id": 19,
+    "user_input": "대전 둔산동에서 오늘 저녁 6시에 출발해서 2~3시간 안에 가볍게 둘러볼 수 있는 지역 명소 없을까? 너무 사람 많은 곳은 피하고 싶어.",
+    "weather_info": {
+      "weather_condition": "CLEAR",
+      "temperature": 10.7,
+      "air_quality": "NORMAL"
+    }
+  },
+
+  {
+    "id": 20,
+    "user_input": "춘천 근처 아파트에서 오늘 오후에 혼자 드라이브하면서 갈 수 있는 조용한 로컬 맛집 있을까? 예산은 1~2만원이야.",
+    "weather_info": {
+      "weather_condition": "PARTLY_CLOUDY",
+      "temperature": 4.4,
+      "air_quality": "GOOD"
+    }
+  },
+
+  {
+    "id": 21,
+    "user_input": "서울 상계동에서 눈이 많이 와서 멀리는 못 가겠어. 오늘 2시간 안에 조용히 산책하거나 사진 찍기 좋은 곳 있을까?",
+    "weather_info": {
+      "weather_condition": "SNOW",
+      "temperature": -0.5,
+      "air_quality": "BAD"
+    }
+  },
+
+  {
+    "id": 22,
+    "user_input": "고양 화정역 근처에서 오늘 오후 1시에 출발하려는데, 너무 조용한 곳은 어색해서 싫어. 적당히 분위기 있는 카페 없을까?",
+    "weather_info": {
+      "weather_condition": "CLOUDY",
+      "temperature": 9.1,
+      "air_quality": "GOOD"
+    }
+  },
+
+  {
+    "id": 23,
+    "user_input": "부산 사상구에서 오늘 오전 10시에 부모님이랑 함께 갈 만한 로컬 시장이나 체험형 농촌 마을 있을까? 5시간 안이면 돼. 차로 갈 거야.",
+    "weather_info": {
+      "weather_condition": "CLEAR",
+      "temperature": 14.1,
+      "air_quality": "NORMAL"
+    }
+  },
+
+  {
+    "id": 24,
+    "user_input": "제주 서귀포시에서 비 오는 날 조용히 책 읽고 생각 정리할 수 있는 서점이나 커뮤니티 공간 추천해줘. 오후 4시에 출발할 거야.",
+    "weather_info": {
+      "weather_condition": "RAIN",
+      "temperature": 12.0,
+      "air_quality": "GOOD"
+    }
+  },
+
+  {
+    "id": 25,
+    "user_input": "울산 남구에서 오늘 오후 2시에 출발해서 친구랑 드라이브하거나 산책하기 좋은 곳 추천해줘. 너무 차 많은 길은 피하고 싶어.",
+    "weather_info": {
+      "weather_condition": "CLEAR",
+      "temperature": 9.9,
+      "air_quality": "VERY_BAD"
+    }
+  },
+
+  {
+    "id": 26,
+    "user_input": "성남 정자동에서 오늘 저녁 6시에 여자친구랑 조용한 레스토랑 가고 싶어. 너무 밝거나 시끄러우면 싫고, 예산은 5만원 정도야.",
+    "weather_info": {
+      "weather_condition": "DRIZZLE",
+      "temperature": 7.2,
+      "air_quality": "NORMAL"
+    }
+  },
+
+  {
+    "id": 27,
+    "user_input": "광명사거리역에서 오늘 오후 3시에 출발해 소규모 상점가나 지역 마을 골목 둘러볼 곳 있을까? 너무 큰 몰은 피하고 싶어.",
+    "weather_info": {
+      "weather_condition": "CLOUDY",
+      "temperature": 11.3,
+      "air_quality": "GOOD"
+    }
+  },
+
+  {
+    "id": 28,
+    "user_input": "범계역 근처에서 오늘 오후에 조용히 산책할 수 있는 공원이나 뷰포인트 추천해줘. 혼자 힐링하고 싶어.",
+    "weather_info": {
+      "weather_condition": "CLEAR",
+      "temperature": 7.5,
+      "air_quality": "NORMAL"
+    }
+  },
+
+  {
+    "id": 29,
+    "user_input": "청주 흥덕구에서 오늘 오후 1시에 출발해서 4시간 안에 드라이브해서 갈 수 있는 전망 좋은 곳 있어? 비 와도 괜찮은데 너무 추운 곳은 싫어.",
+    "weather_info": {
+      "weather_condition": "RAIN",
+      "temperature": 11.0,
+      "air_quality": "GOOD"
+    }
+  },
+
+  {
+    "id": 30,
+    "user_input": "김해 장유동에서 오늘 오전 11시에 친구랑 뜨겁지 않은 온천이나 스파 가고 싶어. 너무 비싸면 힘들어. 차로 이동해.",
+    "weather_info": {
+      "weather_condition": "CLEAR",
+      "temperature": 12.8,
+      "air_quality": "NORMAL"
+    }
+  }
+]
