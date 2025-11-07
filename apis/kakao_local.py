@@ -84,7 +84,7 @@ def get_travel_candidates_by_distance(
             address_name=doc["address_name"],
             road_address_name=doc["road_address_name"],
             phone=doc["phone"],
-            distance=doc["distance"],
+            distance_m=doc["distance"],
         )
         candidates.append(place_info)
 
