@@ -9,9 +9,8 @@ class PlaceCategory(Enum):
 
     TOURIST_SPOT = "AT4"  # 관광명소
     CULTURE_FACILITY = "CT1"  # 문화시설
-    ACCOMMODATION = "AD5"  # 숙박/휴양
-    RESTAURANT = "FD6"  # 음식점
-    CAFE = "CE7"  # 카페
+    # RESTAURANT = "FD6"  # 음식점
+    # CAFE = "CE7"  # 카페
 
 
 class WeatherCondition(Enum):
