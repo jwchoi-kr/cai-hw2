@@ -14,6 +14,8 @@ load_dotenv()
 KAKAO_API_KEY = os.getenv("KAKAO_API_KEY")
 
 MAX_KAKAO_RADIUS_M = 20_000.0
+MAX_PAGES = 1
+PAGE_SIZE = 15
 
 
 def get_travel_candidates_by_keyword_in_radius(
@@ -54,6 +56,7 @@ def get_travel_candidates_by_keyword_in_radius(
 
         for doc in documents:
             place_info = PlaceInfo(
+                id=doc["id"],
                 place_name=doc["place_name"],
                 road_address_name=doc["road_address_name"],
                 dest_lat=float(doc["y"]),
@@ -80,8 +83,6 @@ def get_travel_candidates_by_category_in_radius(
     url = "https://dapi.kakao.com/v2/local/search/category"
     headers = {"Authorization": f"KakaoAK {KAKAO_API_KEY}"}
     radius_m = min(radius_m, MAX_KAKAO_RADIUS_M)  # 카카오 API의 최대 반경은 20km
-    MAX_PAGES = 5
-    PAGE_SIZE = 15
 
     all_places: List[PlaceInfo] = []
 
@@ -109,6 +110,7 @@ def get_travel_candidates_by_category_in_radius(
 
             for doc in documents:
                 place_info = PlaceInfo(
+                    id=doc["id"],
                     place_name=doc["place_name"],
                     road_address_name=doc["road_address_name"],
                     dest_lat=float(doc["y"]),
@@ -193,15 +195,15 @@ def get_travel_candidates_for_long_travel(
                     f"Error retrieving places for center {future_to_center[future]}: {e}"
                 )
 
-    # 중복 제거
-    seen: set[tuple[str, str]] = set()
+    # id 기준으로 중복 제거
+    seen_ids: set[str] = set()
     unique_places: List[PlaceInfo] = []
 
     for place in all_places:
-        identifier = (place.place_name, place.road_address_name)
-        if identifier not in seen:
-            seen.add(identifier)
-            unique_places.append(place)
+        if place.id in seen_ids:
+            continue
+        seen_ids.add(place.id)
+        unique_places.append(place)
 
     return unique_places
 
