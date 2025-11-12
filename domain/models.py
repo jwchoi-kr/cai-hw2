@@ -34,17 +34,8 @@ class FilteredPlaces(BaseModel):
 
 
 @dataclass
-class FinalCandidate:
-    place: str
-    reason: str
-
-
-class FinalCandidates(BaseModel):
-    candidates: List[FinalCandidate]
-
-
-@dataclass
 class PlaceInfo:  # 장소 정보 (카카오맵 api 응답과 매핑)
+    id: str
     place_name: str
     road_address_name: str
     dest_lat: float
@@ -71,12 +62,16 @@ class RawWeather:
 class WeatherSummary:
     weather_condition: WeatherCondition  # 날씨 상태 (enum)
     temperature: float  # 섭씨 온도
-    # air_quality: AirQualityGrade  # 대기질 등급 (enum)
+    air_quality: AirQualityGrade  # 대기질 등급 (enum)
 
 
 @dataclass
 class DestinationCandidate:
     place_info: PlaceInfo  # 장소 정보
-    round_trip_hours: float  # 왕복 이동 시간 (시간 단위, 추후에 카카오 api로 계산 예정)
-    # weather: WeatherSummary  # 날씨 정보
-    # reasons: List[str] = field(default_factory=list)  # 추천 이유
+    round_trip_hours: float  # 왕복 이동 시간
+    weather_summary: WeatherSummary  # 날씨 정보
+    reason: Optional[str] = None  # 추천 이유
+
+
+class DestinationCandidates(BaseModel):
+    candidates: List[DestinationCandidate]
