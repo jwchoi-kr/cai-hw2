@@ -7,9 +7,9 @@ from apis.kakao_local_candidates import (
 from apis.kakao_local_trip_hours import get_round_trip_hours
 from apis.openai_filter import filter_candidates_by_user_preferences
 from apis.openai_parser import parse_user_input
-from apis.openai_scorer import recommend_top_k_candidates
-from apis.weather import get_weather_summary
-from domain.models import DestinationCandidate, PlaceInfo
+from apis.openai_recommender import recommend_top_k_candidates
+from domain.enums import AirQualityGrade, WeatherCondition
+from domain.models import DestinationCandidate, PlaceInfo, WeatherSummary
 from utils.distance_helper import time_to_radius_m
 
 
@@ -44,6 +44,7 @@ def generate_travel_candidates(user_input: str, k: int) -> List[DestinationCandi
 
     # 6. 각 여행지 별로 실제 소요 시간 계산
     filtered_by_distance_candidates: List[DestinationCandidate] = []
+
     for candidate in filtered_by_preference_candidates:
         round_trip_hours = get_round_trip_hours(
             parsed_user_input.departure_time,
@@ -57,17 +58,24 @@ def generate_travel_candidates(user_input: str, k: int) -> List[DestinationCandi
         if round_trip_hours / 2 > parsed_user_input.max_travel_hours:
             continue
 
-        # # 7. 날씨 정보 가져오기
+        # 7. 날씨 정보 가져오기
         # weather_summary = get_weather_summary(
         #     lat=candidate.dest_lat,
         #     lon=candidate.dest_lon,
         #     input_iso=parsed_user_input.departure_time,
         #     duration_hours=round_trip_hours,
         # )
+        # 임시 날씨 정보
+        weather_summary = WeatherSummary(
+            weather_condition=WeatherCondition.CLEAR,
+            temperature=10.0,
+            air_quality=AirQualityGrade.GOOD,
+        )
 
         destination_candidate = DestinationCandidate(
             place_info=candidate,
             round_trip_hours=round_trip_hours,
+            weather_summary=weather_summary,
         )
         filtered_by_distance_candidates.append(destination_candidate)
     print(
@@ -79,7 +87,7 @@ def generate_travel_candidates(user_input: str, k: int) -> List[DestinationCandi
         filtered_by_distance_candidates,
         parsed_user_input.must_include or [],
         parsed_user_input.likes or [],
-        k,
+        parsed_user_input.budget or k,
     )
 
     print(f"7. {len(top_k_candidates)} candidates after recommending top k")
