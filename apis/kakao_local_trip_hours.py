@@ -27,7 +27,9 @@ def get_round_trip_hours(departure_time, origin_lat, origin_lon, dest_lat, dest_
     res = safe_get(url, headers=headers, params=params)
 
     round_trip_hours = (
-        res["routes"][0]["summary"]["duration"] * 2 / 3600.0
-    )  # 시간 단위로 변환
+        (res["routes"][0]["summary"]["duration"] * 2 / 3600.0)
+        if res["routes"][0]["result_code"] == 0
+        else 1
+    )
 
     return round_trip_hours
