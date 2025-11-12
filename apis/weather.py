@@ -1,10 +1,10 @@
-import json
 import os
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
 from dotenv import load_dotenv
 
+from domain.enums import AirQualityGrade
 from domain.models import (
     RawWeather,
     WeatherCondition,
@@ -13,7 +13,7 @@ from domain.models import (
 )
 from utils.http import safe_get
 from utils.weather_helper import (
-    get_kma_base_datetime_from_input,
+    get_latest_datetime,
     latlon_to_xy,
 )
 
@@ -34,12 +34,14 @@ def get_raw_weather(
     시간별 날씨를 가져와 RawWeather 형태로 반환한다.
     """
     nx, ny = latlon_to_xy(lat, lon)  # 위경도를 기상청 격자 좌표로 변환
-    base_date, base_time = get_kma_base_datetime_from_input(input_iso)
+    base_date, base_time = get_latest_datetime()  # 가장 최근 발표 시각
+    user_dt = datetime.fromisoformat(input_iso)
 
+    # API 호출
     url = "https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst"
     params = {
         "serviceKey": WEATHER_API_KEY,
-        "numOfRows": 200,
+        "numOfRows": 1000,  # 충분히 크게
         "pageNo": 1,
         "dataType": "JSON",
         "base_date": base_date,  # YYYYMMDD
@@ -47,75 +49,83 @@ def get_raw_weather(
         "nx": nx,
         "ny": ny,
     }
-
-    print(json.dumps(params, indent=2, ensure_ascii=False))
     res = safe_get(url, params=params)
-    # 실패하면 비어있는 RawWeather 반환
-    if res is None:
+    if not res:
         return RawWeather(nx=nx, ny=ny, snapshots=[])
 
-    items = res["response"]["body"]["items"]["item"]
+    resp = res.get("response", {})
+    header = resp.get("header", {})
+    if header.get("resultCode") != "00":
+        return RawWeather(nx=nx, ny=ny, snapshots=[])
 
-    # 보고 싶은 시간 구간: [base_datetime, base_datetime + duration_hours]
-    start_dt = datetime.strptime(base_date + base_time, "%Y%m%d%H%M")
+    body = resp.get("body", {})
+    items = body.get("items", {}).get("item", [])
+    if not isinstance(items, list):
+        return RawWeather(nx=nx, ny=ny, snapshots=[])
+
+    # 발표시각(base)과 사용자 시각 중 "유효한 예보 시작 시각" 계산
+    base_dt = datetime.strptime(base_date + base_time, "%Y%m%d%H%M")
+    # 단기예보는 base_time 이후 +1h부터 예보 제공
+    base_effective_start = base_dt + timedelta(hours=1)
+    # 사용자 시각을 분 단위 절단(예보는 정시 단위)
+    user_effective_start = user_dt.replace(minute=0, second=0, microsecond=0)
+    if user_dt.minute or user_dt.second or user_dt.microsecond:
+        user_effective_start += timedelta(hours=1)
+
+    start_dt = max(base_effective_start, user_effective_start)
     end_dt = start_dt + timedelta(hours=duration_hours)
 
-    # TMP: 기온, SKY: 하늘상태, PTY: 강수형태, POP: 강수확률
+    # 관심 카테고리만 취합
     target_categories = {"TMP", "SKY", "PTY", "POP"}
-
-    # dt별로 TMP/SKY/PTY/POP를 모아두는 버킷
     bucket: Dict[datetime, Dict[str, Any]] = {}
 
-    for item in items:
-        fcst_date = item["fcstDate"]  # "20250110"
-        fcst_time = item["fcstTime"]  # "0900"
-        category = item["category"]  # "TMP" / "PTY" / "SKY" / "POP"
-        value = item["fcstValue"]
+    for it in items:
+        try:
+            category = it.get("category")
+            if category not in target_categories:
+                continue
 
-        if category not in target_categories:
-            continue
+            fcst_date = it["fcstDate"]  # "YYYYMMDD"
+            fcst_time = it["fcstTime"]  # "HHMM"
+            fcst_dt = datetime.strptime(fcst_date + fcst_time, "%Y%m%d%H%M")
+            if fcst_dt < start_dt or fcst_dt > end_dt:
+                continue
 
-        fcst_dt = datetime.strptime(fcst_date + fcst_time, "%Y%m%d%H%M")
+            value = it.get("fcstValue")
+            row = bucket.setdefault(fcst_dt, {"dt": fcst_dt})
+            row[category] = value
+        except Exception:
+            continue  # 개별 아이템 파싱 실패 시 스킵
 
-        if fcst_dt < start_dt or fcst_dt > end_dt:
-            continue
+    # 정렬 및 숫자 변환
+    def _to_float(v: Optional[str]) -> Optional[float]:
+        if v is None:
+            return None
+        try:
+            return float(v)
+        except Exception:
+            return None
 
-        if fcst_dt not in bucket:
-            bucket[fcst_dt] = {
-                "dt": fcst_dt,
-            }
+    def _to_int(v: Optional[str]) -> Optional[int]:
+        if v is None:
+            return None
+        try:
+            return int(v)
+        except Exception:
+            return None
 
-        bucket[fcst_dt][category] = value
-
-    # 시간 순으로 정렬해서 WeatherSnapshot 리스트로 변환
     snapshots: List[WeatherSnapshot] = []
     for dt_key in sorted(bucket.keys()):
         row = bucket[dt_key]
-
-        def _to_float(v: Optional[str]) -> Optional[float]:
-            if v is None:
-                return None
-            try:
-                return float(v)
-            except ValueError:
-                return None
-
-        def _to_int(v: Optional[str]) -> Optional[int]:
-            if v is None:
-                return None
-            try:
-                return int(v)
-            except ValueError:
-                return None
-
-        snapshot = WeatherSnapshot(
-            dt=row["dt"],
-            TMP=_to_float(row.get("TMP")),
-            SKY=_to_int(row.get("SKY")),
-            PTY=_to_int(row.get("PTY")),
-            POP=_to_int(row.get("POP")),
+        snapshots.append(
+            WeatherSnapshot(
+                dt=row["dt"],
+                TMP=_to_float(row.get("TMP")),
+                SKY=_to_int(row.get("SKY")),
+                PTY=_to_int(row.get("PTY")),
+                POP=_to_int(row.get("POP")),
+            )
         )
-        snapshots.append(snapshot)
 
     return RawWeather(nx=nx, ny=ny, snapshots=snapshots)
 
@@ -175,25 +185,26 @@ def summarize_weather(raw: RawWeather) -> WeatherSummary:
     return WeatherSummary(
         weather_condition=condition,
         temperature=avg_temp,
+        air_quality=AirQualityGrade.GOOD,  # 기본값 설정
     )
 
 
-def get_weather_summary(
-    lat: float,
-    lon: float,
-    input_iso: str,
-    duration_hours: int,
-) -> WeatherSummary:
-    """
-    위도/경도와 기준 시점, 기간을 받아서
-    해당 위치의 요약된 날씨 정보를 반환한다.
-    """
+# def get_weather_summary(
+#     lat: float,
+#     lon: float,
+#     input_iso: str,
+#     duration_hours: int,
+# ) -> WeatherSummary:
+#     """
+#     위도/경도와 기준 시점, 기간을 받아서
+#     해당 위치의 요약된 날씨 정보를 반환한다.
+#     """
 
-    raw_weather = get_raw_weather(
-        lat=lat,
-        lon=lon,
-        input_iso=input_iso,
-        duration_hours=duration_hours,
-    )
-    summary = summarize_weather(raw_weather)
-    return summary
+#     raw_weather = get_raw_weather(
+#         lat=lat,
+#         lon=lon,
+#         input_iso=input_iso,
+#         duration_hours=duration_hours,
+#     )
+#     summary = summarize_weather(raw_weather)
+#     return summary

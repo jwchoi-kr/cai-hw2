@@ -45,34 +45,47 @@ def latlon_to_xy(lat, lon):
     return int(x), int(y)
 
 
-def get_kma_base_datetime_from_input(input_iso: str) -> Tuple[str, str]:
+def get_latest_datetime() -> Tuple[str, str]:
     """
-    유저가 입력한 ISO 형식 시각(YYYY-MM-DDTHH:MM:SS)을 바탕으로
-    기상청 단기예보(getVilageFcst)용 base_date, base_time을 계산한다.
+    현재 시각 기준으로 기상청 단기예보(getVilageFcst)의
+    가장 최근 base_date, base_time을 반환한다.
 
     예:
-        input_iso="2025-11-10T15:30:00" → base_date="20251110", base_time="1400"
-
-    기상청 발표 시각: 02, 05, 08, 11, 14, 17, 20, 23시
+        지금이 2025-11-12 15:20 → ("20251112", "1400")
+        지금이 2025-11-12 01:10 → ("20251111", "2300")
     """
-    # ISO 문자열을 datetime 객체로 변환
-    target_dt = datetime.datetime.fromisoformat(input_iso)
+    now = datetime.datetime.now()
 
     BASE_HOURS = [2, 5, 8, 11, 14, 17, 20, 23]
-    hour = target_dt.hour
+    hour = now.hour
 
-    # target_dt보다 이전 또는 같은 발표 시각 중 가장 최근 발표 시각 찾기
+    # 현재 시각보다 작거나 같은 가장 최근 발표 시각 찾기
     candidates = [h for h in BASE_HOURS if h <= hour]
 
     if candidates:
         base_hour = max(candidates)
-        base_date_dt = target_dt
+        base_date_dt = now
     else:
-        # 첫 발표 시각(02:00) 이전이면 전날 23시 발표 사용
+        # 새벽 0~1시 → 전날 23시 발표 사용
         base_hour = 23
-        base_date_dt = target_dt - datetime.timedelta(days=1)
+        base_date_dt = now - datetime.timedelta(days=1)
 
     base_date = base_date_dt.strftime("%Y%m%d")
-    base_time = f"{base_hour:02d}00"  # HHMM 형식
+    base_time = f"{base_hour:02d}00"
 
     return base_date, base_time
+
+
+def get_fcst_datetime_from_iso(input_iso: str) -> Tuple[str, str]:
+    """
+    ISO 8601 형식의 입력 시각 문자열을 받아서
+    기상청 예보용 fcstDate, fcstTime 문자열로 변환한다.
+
+    예:
+        input_iso = "2025-11-12T15:30:00"
+        → ("20251112", "1530")
+    """
+    dt = datetime.datetime.fromisoformat(input_iso)
+    fcst_date = dt.strftime("%Y%m%d")
+    fcst_time = dt.strftime("%H%M")
+    return fcst_date, fcst_time
