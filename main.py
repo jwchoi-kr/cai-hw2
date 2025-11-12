@@ -17,7 +17,7 @@ def main():
 
         print("=== 추천된 상위 여행지 ===")
         for idx, fc in enumerate(final_candidates, start=1):
-            print(f"{idx}. {fc.place}")
+            print(f"{idx}. {fc.place_info}")
             print(f"   이유: {fc.reason}\n")
 
     except Exception as e:
