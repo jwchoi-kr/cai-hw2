@@ -1,28 +1,50 @@
-from services.travel_intent_service import generate_travel_candidates
+from apis.openai_intent_parser import parse_user_intent
+from apis.openai_unknown_handler import handle_unknown_input
+from domain.enums import ChatIntent
+from domain.models import ChatSessionState
+from services.travel_input_service import (
+    generate_travel_candidates,
+)
+from services.travel_output_service import generate_final_output
 
 
-def main():
-    # user_input = input("여행 계획을 입력하세요: ")
-    user_input = (
-        "서울 강남역에서 이번 주 토요일 오전 9시에 출발해서 여자친구랑 하루 나들이 가고 싶어. "
-        "왕복으로 6시간 정도 걸리는 거리면 좋겠고, 예산은 8만 원이야. "
-        "차로 이동할 거고, 사람 많은 도심이나 쇼핑몰은 피하고 싶어. "
-        "자연 풍경이 예쁘고 조용한 곳이나, 미술관이나 전시회처럼 문화적인 장소도 괜찮아."
-    )
+def run_chatbot():
+    state = ChatSessionState()
 
-    try:
-        final_candidates = generate_travel_candidates(
-            user_input, k=5
-        )  # List[FinalCandidate] 반환
+    print("여행 추천 챗봇입니다. 무엇을 도와드릴까요?\n")
 
-        print("=== 추천된 상위 여행지 ===")
-        for idx, fc in enumerate(final_candidates, start=1):
-            print(f"{idx}. {fc.place_info}")
-            print(f"   이유: {fc.reason}\n")
+    while True:
+        user_input = input("User: ").strip()
+        if not user_input:
+            continue
+        if user_input.lower() in ("exit", "quit", "종료"):
+            print("챗봇을 종료합니다.")
+            break
 
-    except Exception as e:
-        print(f"오류가 발생했습니다: {e}")
+        has_already_recommended = len(state.candidates) > 0
+
+        # Intent 추출
+        intent = parse_user_intent(
+            user_input,
+            has_already_recommended,
+        )
+
+        # Intent 라우팅
+        if intent == ChatIntent.TRIP_INFO:
+            generate_travel_candidates(user_input, 5, state)
+            response = generate_final_output(state)
+
+        elif intent == ChatIntent.NEXT_CANDIDATE:
+            response = generate_final_output(state)
+
+        elif intent == ChatIntent.FOLLOW_UP:
+            response = "추가 질문이나 요청에 대한 답변 기능은 아직 구현되지 않았습니다."
+
+        else:
+            response = handle_unknown_input(user_input, has_already_recommended)
+
+        print(f"Bot: {response}\n")
 
 
 if __name__ == "__main__":
-    main()
+    run_chatbot()
