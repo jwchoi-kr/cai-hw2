@@ -17,7 +17,10 @@ prompt_template = """
 여행 조건을 구조화된 JSON 형태로 반환하는 역할을 한다.
 
 반환 스키마:
+반환 스키마:
 - origin (str): 출발지. 언급 없으면 "미상".
+    유저의 개인 정보 보호를 위해 **정확한 위치(구체적 주소, 상세 지점 등)를 저장하지 마라.**
+- departure_datetime (str)
 - departure_datetime (str)
     - 사용자 표현을 → ISO 8601 "YYYY-MM-DDTHH:MM:SS"
     - “오늘/내일/모레/이번 토요일/다음 주말” 등 상대적 표현은 now_iso 기준

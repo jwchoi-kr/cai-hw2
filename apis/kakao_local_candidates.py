@@ -14,7 +14,7 @@ load_dotenv()
 KAKAO_API_KEY = os.getenv("KAKAO_API_KEY")
 
 MAX_KAKAO_RADIUS_M = 20_000.0
-MAX_PAGES = 1
+MAX_PAGES = 3
 PAGE_SIZE = 15
 
 
