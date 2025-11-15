@@ -1,91 +1,132 @@
-import datetime
-import math
-from typing import Tuple
+from datetime import date
+
+from domain.enums import WeatherCode
+from domain.models import DailyWeather
 
 
-def latlon_to_xy(lat, lon):
+def get_daily_index(target_iso_date: str, daily_times: list[str]) -> int:
     """
-    위도/경도 -> 기상청 격자 좌표 변환
-    """
-    RE = 6371.00877  # 지구 반경(km)
-    GRID = 5.0  # 격자 간격(km)
-    SLAT1 = 30.0  # 투영 위도1
-    SLAT2 = 60.0  # 투영 위도2
-    OLON = 126.0  # 기준점 경도
-    OLAT = 38.0  # 기준점 위도
-    XO = 43  # 기준점 X좌표
-    YO = 136  # 기준점 Y좌표
-
-    DEGRAD = math.pi / 180.0
-
-    re = RE / GRID
-    slat1 = SLAT1 * DEGRAD
-    slat2 = SLAT2 * DEGRAD
-    olon = OLON * DEGRAD
-    olat = OLAT * DEGRAD
-
-    sn = math.tan(math.pi * 0.25 + slat2 * 0.5) / math.tan(math.pi * 0.25 + slat1 * 0.5)
-    sn = math.log(math.cos(slat1) / math.cos(slat2)) / math.log(sn)
-    sf = math.tan(math.pi * 0.25 + slat1 * 0.5)
-    sf = (sf**sn * math.cos(slat1)) / sn
-    ro = math.tan(math.pi * 0.25 + olat * 0.5)
-    ro = re * sf / (ro**sn)
-
-    ra = math.tan(math.pi * 0.25 + lat * DEGRAD * 0.5)
-    ra = re * sf / (ra**sn)
-    theta = lon * DEGRAD - olon
-    if theta > math.pi:
-        theta -= 2.0 * math.pi
-    if theta < -math.pi:
-        theta += 2.0 * math.pi
-    theta *= sn
-
-    x = ra * math.sin(theta) + XO + 0.5
-    y = ro - ra * math.cos(theta) + YO + 0.5
-    return int(x), int(y)
-
-
-def get_latest_datetime() -> Tuple[str, str]:
-    """
-    현재 시각 기준으로 기상청 단기예보(getVilageFcst)의
-    가장 최근 base_date, base_time을 반환한다.
+    주어진 ISO 날짜 문자열(target_iso_date)이 daily["time"] 리스트에서
+    몇 번째 인덱스인지 반환한다.
 
     예:
-        지금이 2025-11-12 15:20 → ("20251112", "1400")
-        지금이 2025-11-12 01:10 → ("20251111", "2300")
+        daily["time"] = [
+            "2025-11-15",  # 오늘
+            "2025-11-16",  # 내일
+            "2025-11-17",  # 모레
+        ]
+        target_iso_date = "2025-11-17" → 반환값 2
     """
-    now = datetime.datetime.now()
 
-    BASE_HOURS = [2, 5, 8, 11, 14, 17, 20, 23]
-    hour = now.hour
+    # iso 문자열을 date 객체로 변환
+    target_date = date.fromisoformat(target_iso_date)
 
-    # 현재 시각보다 작거나 같은 가장 최근 발표 시각 찾기
-    candidates = [h for h in BASE_HOURS if h <= hour]
+    # daily_times 배열을 순회하며 찾음
+    for idx, iso_str in enumerate(daily_times):
+        if date.fromisoformat(iso_str) == target_date:
+            return idx
 
-    if candidates:
-        base_hour = max(candidates)
-        base_date_dt = now
-    else:
-        # 새벽 0~1시 → 전날 23시 발표 사용
-        base_hour = 23
-        base_date_dt = now - datetime.timedelta(days=1)
-
-    base_date = base_date_dt.strftime("%Y%m%d")
-    base_time = f"{base_hour:02d}00"
-
-    return base_date, base_time
+    # 없다면 에러
+    raise ValueError(f"해당 날짜({target_iso_date})는 daily 예보 범위에 없음.")
 
 
-def get_fcst_datetime_from_iso(input_iso: str) -> Tuple[str, str]:
+def calculate_outdoor_score(daily_weather: DailyWeather) -> int:
     """
-    ISO 8601 형식의 입력 시각 문자열을 받아서
-    기상청 예보용 fcstDate, fcstTime 문자열로 변환한다.
+    일일 날씨 정보를 기반으로 실외 활동 적합도 점수(0~100)를 계산한다.
 
-    예:
-        input_iso = "2025-11-12T15:30:00"
-        → ("20251112", "1530")
+    입력값:
+        weather_code (int): Open-Meteo의 WMO 날씨 코드.
+        t_max (float): 해당 일자의 최고 기온(°C).
+        t_min (float): 해당 일자의 최저 기온(°C).
+        precipitation_sum (float): 일 강수량 총합(mm).
+
+    점수 계산 로직:
+        • 기본 점수 = 100.
+
+        • 날씨 코드 패널티:
+            - 폭우/폭설/뇌우 계열: -80
+            - 약/중간 비, 이슬비, 소나기: -40
+            - 안개: -20
+
+        • 강수량 패널티:
+            - >10mm: -50
+            - >5mm: -30
+            - >1mm: -15
+
+        • 온도 패널티(체감 기준):
+            - t_max ≥ 32°C: -30
+            - t_max ≥ 28°C: -20
+            - t_max ≤ 0°C: -30
+            - t_max ≤ 5°C: -20
+            - t_min ≤ -5°C: -20
+            - t_min ≤ 0°C: -10
+
+    최종 점수 해석:
+        • 80~100 → 실외 활동에 매우 적합
+        • 60~79  → 무난하게 가능
+        • 40~59  → 다소 애매함
+        • 20~39  → 실외 비추천
+        • 0~19   → 실외 활동 거의 불가능
+
+    반환값:
+        int: 실외 활동 적합도 점수(0~100).
     """
-    dt = datetime.datetime.fromisoformat(input_iso)
-    fcst_date = dt.strftime("%Y%m%d")
-    fcst_time = dt.strftime("%H%M")
-    return fcst_date, fcst_time
+
+    # 초기 점수 (기본 좋음 가정)
+    score = 100
+
+    wc = WeatherCode(daily_weather.weather_code)
+
+    # 1) 날씨 유형 패널티
+    if wc in [
+        WeatherCode.RAIN_HEAVY,
+        WeatherCode.RAIN_SHOWER_HEAVY,
+        WeatherCode.SNOW_HEAVY,
+        WeatherCode.THUNDERSTORM,
+        WeatherCode.THUNDERSTORM_HAIL_LIGHT,
+        WeatherCode.THUNDERSTORM_HAIL_HEAVY,
+    ]:
+        score -= 80
+
+    elif wc in [
+        WeatherCode.RAIN_LIGHT,
+        WeatherCode.RAIN_MODERATE,
+        WeatherCode.RAIN_SHOWER_LIGHT,
+        WeatherCode.RAIN_SHOWER_MODERATE,
+        WeatherCode.DRIZZLE_LIGHT,
+        WeatherCode.DRIZZLE_MODERATE,
+    ]:
+        score -= 40
+
+    elif wc in [
+        WeatherCode.FOG,
+        WeatherCode.DEPOSITING_RIME_FOG,
+    ]:
+        score -= 20
+
+    # 2) 강수량 패널티
+    if daily_weather.precipitation_sum > 10:
+        score -= 50
+    elif daily_weather.precipitation_sum > 5:
+        score -= 30
+    elif daily_weather.precipitation_sum > 1:
+        score -= 15
+
+    # 3) 온도 패널티
+    if daily_weather.t_max >= 32:
+        score -= 30
+    elif daily_weather.t_max >= 28:
+        score -= 20
+    elif daily_weather.t_max <= 0:
+        score -= 30
+    elif daily_weather.t_max <= 5:
+        score -= 20
+
+    if daily_weather.t_min <= -5:
+        score -= 20
+    elif daily_weather.t_min <= 0:
+        score -= 10
+
+    # 점수 보정
+    score = max(0, min(score, 100))
+    return score
