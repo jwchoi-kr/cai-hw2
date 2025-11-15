@@ -1,29 +1,49 @@
 import math
 from typing import List, Optional, Tuple
 
+from domain.enums import Transportation
+
 MAX_KAKAO_RADIUS_M = 20_000.0
 
 
-def time_to_radius_m(hours: float, transportation: Optional[str] = "car") -> float:
+def max_travel_hours_to_radius_m(
+    total_hours: float,
+    transportation: Optional[Transportation] = None,
+) -> float:
     """
-    총 가용시간 -> 탐색 '반경(m)'으로 변환 (매우 나이브).
-    이동에 45% 사용, 편도 기준 절반, 여유 0.8 배.
+    사용자의 총 여행 가능 시간(total_hours, 왕복 기준)과
+    교통수단(Transportation Enum: CAR / PUBLIC)을 기반으로
+    매우 naive한 탐색 반경(m)을 계산한다.
+
+    이동 가능한 시간 비율은 대략 45%로 가정하고,
+    왕복 이동 시간을 편도로 나눠 거리(km)로 환산해서
+    마지막으로 안전 계수 0.8을 적용한다.
+
+    최소 반경은 3 km(=3000 m)로 고정한다.
     """
+
+    # 평균 이동 속도(km/h) — 매우 단순화된 값
     speed_map = {
-        "car": 60.0,
-        "bus": 40.0,
-        "train": 80.0,
-        "bicycle": 15.0,
-        "walking": 5.0,
-        "public": 22.0,  # 없을 때 기본
+        Transportation.CAR: 60.0,  # 시내/외 평균 속도 대략
+        Transportation.PUBLIC: 22.0,  # 버스+지하철 평균치 (탑승/환승 포함)
     }
-    key = (transportation or "public").lower()
-    speed = speed_map.get(key, 22.0)
-    move_hours = max(0.0, hours) * 0.45
-    one_way_km = (speed * move_hours) / 2.0
+
+    # transport 값 없으면 car 기준으로 계산
+    speed = speed_map.get(transportation, speed_map[Transportation.CAR])
+
+    # 총 시간 중 실제 '이동'에 쓸 수 있는 시간 비율
+    move_hours = max(0.0, total_hours) * 0.5
+
+    # 왕복 → 편도로 나누기
+    one_way_hours = move_hours / 2.0
+
+    # 거리 = 속도 × 시간 (km)
+    one_way_km = speed * one_way_hours
+
+    # 약간의 여유 계수
     radius_km = max(3.0, one_way_km * 0.8)
-    radius_m = radius_km * 1000.0
-    return radius_m
+
+    return radius_km * 1000.0  # meter
 
 
 def make_ring_centers(
